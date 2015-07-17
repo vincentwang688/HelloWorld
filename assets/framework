@@ -1,0 +1,4 @@
+framework1.包括一个 ViewSystem， 一个ContentProvider 和 七个 manager(PackageManager\LocationManager\ActivityManager\WindowManager\RecourceManager\TelephonyManager\NotificationManager)
+
+深入理解android卷一学习：
+1.深入理解 init，init是一个进程，确切的说，init是Linux系统中的第一个进程，所以也是Android中的第一个进程。

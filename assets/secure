@@ -1,0 +1,18 @@
+如果应用程序申请获得了超级设备管理员权限，则无法正常卸载，必须在位置与安全下面设备管理器去除该权限才能卸载。如果该界面被禁用则无法卸载。
+system 下有所有应用的 apk 文件
+apktool 反编译 .xml很清晰
+dex2jar 反编译class ，jd_gui查看
+5.子线程中显示Toast 
+	Looper.prepare();
+	Toast.show();
+	Looper.loop();
+6.pop 设置为透明背景色。
+7.可以通过程序管理器启动卸载程序，所以，如果不知道一个程序的启动activity，可通过包管理服务在代码中获取到。
+
+8.程序锁：后台一直运行的服务，通过ActivityManager 来获取当前任务栈栈顶元素。
+9.通过内容提供者操作数据，以便使用内容观察者监听数据。
+10.killBackgroundProcess杀死其他进程
+
+11.android可将 Application 作为所有activity 等的session
+
+12.梆梆助手加固apk 防止植入

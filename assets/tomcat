@@ -1,0 +1,93 @@
+=====================apache优化=======================
+
+http://blog.chinaunix.net/uid-22120556-id-2827648.html
+
+=====================apache==========================
+
+1.性能優化http://tech.ddvip.com/2012-12/1356020652187486.html
+Tomcat的优化分成两块：
+ü   Tomcat启动命令行中的优化参数即JVM优化
+ü   Tomcat容器自身参数的优化
+
+
+1.修改-Xmx
+2.DNS查询关闭enableLookups="false"
+3.给Tomcat配置gzip压缩(HTTP压缩)功能：前提是meta头字段 ：Accept-Encoding允许gzip
+
+其他：尚无法设置准确参数
+
+minSpareThreads：
+
+maxThreads：
+
+acceptCount：acceptCount是当线程数达到maxThreads后，后续请求会被放入一个等待队列，这个acceptCount是这个队列的大小，如果这个队列也满了，就直接refuse connection
+
+===========================================
+
+
+1.http://www.cnblogs.com/ilahsa/archive/2013/01/31/2887149.html
+
+tomcat 启用NIO
+
+
+
+
+　从Tomcat6.0以后, Java开发者很容易就可以是用NIO的技术来提升tomcat的并发处理能力。
+ 
+<Connector port="8080" protocol="HTTP/1.1"
+               connectionTimeout="20000"
+               redirectPort="8443" /> 
+修改成：
+ 
+<Connector port="8080" protocol="org.apache.coyote.http11.Http11NioProtocol"
+               connectionTimeout="20000"
+               redirectPort="8443" />
+               
+2.tomcat 连接池
+
+http://blog.csdn.net/pingguogutou/article/details/4922509
+
+
+<Executor name="tomcatThreadPool" namePrefix="catalina-exec-"    
+       maxThreads="200" minSpareThreads="100" maxIdleTime="60000"/>  
+       
+       
+       
+
+
+ <Connector port="8080" protocol="HTTP/1.1" redirectPort="8443"   
+               connectionTimeout="20000"   
+               executor="tomcatThreadPool"  
+               acceptCount="100"  
+               useBodyEncodingForURI="true"  
+               enableLookups="false"  
+                /> 
+                
+                
+                
+3.数据库连接池
+
+druid
+
+4.启用apr
+
+
+
+5.修改jvm 内存
+
+JAVA_OPTS="-XX:PermSize=64M -XX:MaxPermSize=128m -Xms512m -Xmx1024m"
+
+
+-vmargs -Xms128M -Xmx512M -XX:PermSize=64M -XX:MaxPermSize=128M
+-vmargs 说明后面是VM的参数，所以后面的其实都是JVM的参数了
+-Xms128m JVM初始分配的堆内存
+-Xmx512m JVM最大允许分配的堆内存，按需分配
+-XX:PermSize=64M JVM初始分配的非堆内存
+-XX:MaxPermSize=128M JVM最大允许分配的非堆内存，按需分配
+
+
+http://www.doc88.com/p-481336673749.html 调优
+http://www.oschina.net/translate/tomcat-performance-tuning?from=20130727
+http://www.linuxidc.com/Linux/2012-09/71262.htm
+
+

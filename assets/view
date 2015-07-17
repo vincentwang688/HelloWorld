@@ -1,0 +1,157 @@
+屏幕适配：
+http://developer.android.com/guide/practices/screens_support.html
+http://www.zcool.com.cn/article/ZNjI3NDQ=.html 可参考
+
+
+=============view的绘制过程==================
+参看博客：http://blog.csdn.net/qinjuning/article/details/7110211
+measure
+1.measure过程为每个view树计算实际的大小，即设置实际的高mMeasuredHeight
+2.每个view的实际宽高是子视图和父视图共同决定的
+
+		ViewGroup调用measure方法去计算View树的大小，回调onMeasure方法：
+			1.设置本view视图的最终大小，该功能的实现通过调用setMeasuredDimension方法去设置实际的高mMeasuredHeight
+			2.如果该View是viewGroup类型，需要重写onMeasure方法，对其子view进行遍历measure过程，通过measureChildWithMargins方法实现，
+			该方法只是简单地调用了view的measure方法，所以可以直接调用view的measure
+			3.int width = MeasureSpec.getSize(widthMeasureSpec);MeasureSpec封装的是实际屏幕的宽高度
+layout
+1.根据子视图的大小以及布局参数将view树放到合适的位置
+2.开始view树的布局，继而回调给view/viewGroup类中的layout方法
+		1.layout方法会设置该view视图位于父视图的坐标轴,即mleft
+		2.如果该view是viewGroup则需要实现onLayout调用每个view的layout对每个子视图进行布局
+		
+draw
+
+什么时候获取到view的宽高 ？
+=======================性能优化===============
+参看：http://www.trinea.cn/android/performance/
+参看总结：http://www.trinea.cn/android/android%E6%80%A7%E8%83%BD%E8%B0%83%E4%BC%98/
+
+
+2、何为性能问题
+在性能测试中存在两个概念：
+(1). 响应时间
+指从用户操作开始到系统给用户以正确反馈的时间。一般包括系统处理时间 + 网络传输时间 + 展现时间。对于非网络类应用不包括网络传输时间。响应时间是用户对性能最直接的感受。
+
+(2). TPS(Transaction Per Second)
+TPS为每秒处理的事务数，是系统吞吐量的指标，在搜索系统中也用QPS(Query Per Second)衡量。TPS一般与响应时间反相关。
+
+ 
+
+通常所说的性能问题就是指响应时间过长、系统吞吐量过低。在web性能测试中，也会将高并发下内存泄漏归为性能问题。
+
+在Android应用程序中由于系统ANR的限制，所以对主线程的响应时间提出了更高的要求。Android ANR的具体要求是指Activity对事件响应不超过5秒，BroadcastReceiver中执行时间不超过10秒。
+
+ 
+
+3、性能调优方式
+
+明白了何为性能问题之后，就能明白性能优化实际就是优化系统的响应时间，提高TPS。优化响应时间，提高TPS的方式包括：
+(1) 降低执行时间
+这部分包括：a. 缓存(包括对象缓存、IO缓存、网络缓存), b. 数据存储类型优化, c. 算法优化, d. JNI, e. 逻辑优化, f. 需求优化
+
+(2) 同步改异步，利用多线程提高TPS
+
+(3) 提前或延迟操作，错开时间段提高TPS
+
+对于数据库优化、布局优化、Java代码部分优化都可以归纳到上面的几种方式中。
+=======================布局优化=================
+关键点在于减少view树的层次：通过hierarchyviewer来查看，运行lint查看优化提示：
+hierarchyviewer：
+1.查看布局层次：
+2.查看加载时间，优化：
+
+    Measure: 0.598ms
+
+    Layout: 0.110ms
+
+    Draw: 2.146ms
+
+3.使用merge
+merge标签可用于两种典型情况：
+	1.布局顶结点是FrameLayout且不需要设置background或padding等属性，可以用merge代替，因为Activity内容试图的parent view就是个FrameLayout，所以可以用merge消除只剩一个。
+	2.某布局作为子布局被其他布局include时，使用merge当作该布局的顶节点，这样在被引入时顶结点会自动被忽略，而将其子节点全部合并到主布局中。
+4.使用include 重用布局
+5.使用ViewStub占位，减少可能不会被使用的布局的加载。例如：异常提示的布局
+
+=======================图片优化，参见google bitmapfun===================
+1.图片下载的优化
+	使用Utils下ImageFecher 1.配置缓存路径和大小(内存和sd卡)
+2.图片加载的优化
+	使用ImageResizer对bitmap进行重新计算返回处理后的bitmap
+	
+	
+======================Android ListView滑动过程中图片显示重复错乱闪烁问题解决===========
+
+参看博客：http://www.trinea.cn/android/android-listview%E6%BB%91%E5%8A%A8%E8%BF%87%E7%A8%8B%E4%B8%AD%E5%9B%BE%E7%89%87%E6%98%BE%E7%A4%BA%E9%87%8D%E5%A4%8D%E9%94%99%E4%B9%B1%E9%97%AA%E7%83%81%E9%97%AE%E9%A2%98%E8%A7%A3%E5%86%B3/
+
+ListView item缓存机制：为了使得性能更优，ListView会缓存行item(某行对应的View)。ListView通过adapter的getView函数获得每行的item。滑动过程中，
+a. 如果某行item已经滑出屏幕，若该item不在缓存内，则put进缓存，否则更新缓存；
+b. 获取滑入屏幕的行item之前会先判断缓存中是否有可用的item，如果有，做为convertView参数传递给adapter的getView。
+这就带来了一些问题：显示错乱
+	比如ListView滑动到第2行会异步加载某个图片，但是加载很慢，加载过程中listView已经滑动到了第14行，且滑动过程中该图片加载结束，第2行已不在屏幕内，根据上面介绍的缓存原理，第2行的view可能被第14行复用
+
+通过上面的分析我们知道了出现错乱的原因是异步加载及对象被复用造成的，如果每次getView能给对象一个标识，在异步加载完成时比较标识与当前行item的标识是否一致，一致则显示，否则不做处理即可
+
+====================================android 事件传递机制====================
+1.Activity 具有：
+	1.1 dispatchTouchEvent：Called to process touch screen events. You can override this to intercept all touch screen events before they are dispatched to the window. Be sure to call this implementation for touch screen events that should be handled normally.
+		这个方法与view的同名方法意义不同：复写这个方法用来拦截所有的屏幕touch事件。是拦截事件。这样任何一个onTouch都会无效。除非你继续向下传递。
+	1.2 onTouchEvent：Called when a touch screen event was not handled by any of the views under it. This is most useful to process touch events that happen outside of your window bounds, where there is no view to receive it.
+		Activity中所有view不处理touch事件，那么将有这个方法来处理。
+2.ViewGroup 具有：
+	2.1 dispatchTouchEvent：Pass the touch screen motion event down to the target view, or this view if it is the target. 
+		将touch事件交给目标view，或者交给自己(当他自己是目标view时)。
+	2.2 onInterceptTouchEvent：Implement this method to intercept all touch screen motion events. This allows you to watch events as they are dispatched to your children, and take ownership of the current gesture at any point. 
+	Using this function takes some care, as it has a fairly complicated interaction with View.onTouchEvent(MotionEvent), and using it requires implementing that method as well as this one in the correct way. Events will be received in the following order: 
+	You will receive the down event here. 
+	The down event will be handled either by a child of this view group, or given to your own onTouchEvent() method to handle; this means you should implement onTouchEvent() to return true, so you will continue to see the rest of the gesture (instead of looking for a parent view to handle it). Also, by returning true from onTouchEvent(), you will not receive any following events in onInterceptTouchEvent() and all touch processing must happen in onTouchEvent() like normal. 
+	For as long as you return false from this function, each following event (up to and including the final up) will be delivered first here and then to the target's onTouchEvent(). 
+	If you return true from here, you will not receive any following events: the target view will receive the same event but with the action ACTION_CANCEL, and all further events will be delivered to your onTouchEvent() method and no longer appear here. 
+		用来拦截事件：
+			1.这个方法让你能够检测分发个子view的所有事件，并且让你拥有当前手势上任何一个点的控制权。
+			2.要小心的使用这个方法，它和OnTouch有着相当复杂的关系。事件将以以下方式来接收：
+				2.1 down事件或者被自己的子view处理或者交给自己的OnTouch处理。这意味着你要返回true来实现OnTouch方法。so,你能够接收到接下来的手势(而不是让父视图去处理)。
+					这样所有接下来的事件都不会进入本方法而是交给OnTouch去处理。
+				2.2  如果你在本方法返回false，每个接下来的事件都将被最先传送到此处，然后交给目标的OnTouch
+				2.3  如果你返回true，你将不会接收到任何接下来的事件，目标view将会接收到除了ACTION_CANCEL之外和你一样的事件，接下来的所有事件将会直接交给你的OnTouch，不会再出现在这里。
+	2.3 onTouchEvent: Implement this method to handle touch screen motion events.
+		如果事件没有被处理将会层层上调，直到交给Activity的OnTouch处理。
+3.View 没有	onInterceptTouchEvent，其他同上。
+
+
+
+总结：view的事件机制分为两个部分：一个是事件向下传递，一个是事件向上消耗（这里以两层作为介绍）：
+Activity首先：
+	1.dispatchTouchEvent 判断是否拦截，如果需要拦截你就返回true or false。true代表事件已经被我消耗了。false 代表没有被消耗。因为在actiity中，所以这个是没有区别的。
+	2.如果不拦截，则继续向下分发事件。super.dispatchTouchEvent(event).
+ViewGroup其次：
+	1.dispatchTouchEvent 判断是否继续分发事件:
+		1.1:返回true 表示该事件已经被消耗了，本次事件结束。activity开始接受后续事件。
+		1.2:返回false表示该事件没有消耗，向上传递给activity 的 OnTouch处理
+		1.3:继续向下传递事件：super.dispatchTouchEvent(event).
+	2.onInterceptTouchEvent 判断是否拦截事件：
+		2.1:返回false 表示该该事件没有被拦截，继续向下分发。
+		2.2:返回true 表示该事件被拦截，将直接交给OnTouch处理。如果OnTouch返回 true，下个事件将不会进入这个方法。直接进入OnTouch,如果OnTouch返回false,则继续向上传递给activity的OnTouch方法最终处理.
+		2.3:返回super.onInterceptTouchEvent(event).继续向下分发事件。
+View最后：
+	1.dispatchTouchEvent 判断是否继续分发事件:
+		1.1:返回true 表示该事件已经被消耗了，本次事件结束。
+		1.2:返回false 表示该事件没有消耗，向上传递给ViewGroup 的 OnTouch.
+		1.3:继续分发事件 交给 OnTouch处理.如果OnTouch返回true表示已经处理.如果返回false继续向上传递给ViewGroup OnTouch处理.
+	
+	
+=============================Canvas 使用============================================
+	1.明白Canvas 是 画布
+	2.paint 是 画笔
+	3.重要的path：包含 几何曲线组件的轮廓。canvas.drawLine/drawCircle,完全可以使用 canvas.drawPath. 
+	
+101.ListView自动滚动 ：使用：listview.smoothScrollBy(1, 10);
+102.android 安装 换肤：反射。
+
+=======================软键盘控制显示
+    			keyWord.setFocusable(true);
+				keyWord.setFocusableInTouchMode(true);
+				keyWord.requestFocus();
+				InputMethodManager inputManager = (InputMethodManager) keyWord.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+				inputManager.showSoftInput(keyWord, 0);

@@ -1,0 +1,55 @@
+=======整理这篇文档主要是针对android开发一年以上人员所需学习的资料
+1.熟悉Linux下开发
+2.熟悉FrameWork
+3.熟悉ndk开发
+4.c/c++
+5.UML
+======待再次熟悉技能==============
+1.view的绘制流程，完全自定义view
+2.android音频通信，完全搞定(自己的业务)
+3.性能分析与优化
+4.openGL
+5.Canvas
+6.事件传递机制
+7.IBinder
+8.源码：
+	9.1基本 view/viewGroup的源码
+	9.2基本adapter
+	9.3IBinder、AsyncTask之类
+9.操作系统
+============android 测试========
+1.单元测试
+2.testin android 自动化测试
+
+============android 安全========
+1.反编译
+2.植入病毒
+3.Base64 加密、解密可防止乱码
+============来自论坛============
+
+	一、初级
+
+　　1. 拥有娴熟的Java基础，理解设计模式，比如OOP语言的工厂模式要懂得.
+
+　　2. 掌握Android UI控件、Android Java层API相关使用.
+
+　　迈向中级，最好再次更新下Java技术，掌握Java concurrent库、nio库，精通xml、json解析，做过socket c/s端的程序.
+
+　　二、中级
+
+　　1. 熟练掌握NDK JNI方式的开发，对Android framework十分了解.
+
+　　2. 移植一些开源项目，比如FFmpeg、Mplayer到Android上运行.
+
+　　迈向高级，熟悉android开源代码的结构，中间件下层的库，比如webkit、opencore、opengl.
+
+　　三、高级
+
+　　1. 熟练的Linux驱动开发，精通Linux内核结构.
+
+　　2. 掌握Android移植，比如常见的TI OMAP、Qualcomm MSM的硬件移植.
+
+　　迈向顶级，发现Android系统中的0day漏洞，可以轻松的找出Root系统的10种方法，帮助Google改进Android操作系统.
+
+==============通用===========
+精通常用数据结构与算法，熟悉TCP/IP、HTTP

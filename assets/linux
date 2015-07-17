@@ -1,0 +1,37 @@
+1.sudo 以root用户运行该命令
+2.su 切换到root用户
+3.su -切换到root用户并使用新得运行环境
+4.在后台运行该命令  加 &
+5.暂停某个程序 Ctrl+z
+6.停止命令运行Ctrl+c
+7.jobs管理后台作业
+8.linux文件系统严格区分大小写
+9.文件系统的根目录为 /
+10.每一个shell都有一个当前工作目录 pwd查看
+11.以 .开头的文件为隐藏文件
+12.ls -a ;ls --all
+13.当前目录 . 上一级目录 .. 家目录 ~ 上一个工作目录 -
+14.通过DNS控制台查询维基百科
+dig +short txt <keyword>.wp.dg.cx
+
+15.ctrl+u删除整行
+
+16.iptables 表 规则 动作
+
+iptables [-t table] command [chain] [match][target]
+e.g. iptables -t filter -A INPUT  -p tcp --sport 80 -j ACCEPT
+            |-table-|-command-|-------match--------|---target---|
+
+-A：APPEND
+-I:INSERT   
+-p：指定协议类型   
+-d：指定目标地址   
+--dport：指定目标端口（destination port 目的端口）   
+--sport：指定源端口（source port 源端口）   
+-j：指定动作类型
+
+
+
+grep -A 5 137* lvl.log  AFTER
+grep -B 5 137* lvl.log  BEFORE
+grep -C 5 137* lvl.log  MIDDLE

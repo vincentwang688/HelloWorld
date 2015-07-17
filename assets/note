@@ -1,0 +1,311 @@
+1.模拟键盘删除键
+dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL));
+
+2.listView 自动滚动到底部属性设置
+
+android:stackFromBottom="true"
+android:transcriptMode="alwaysScroll" 
+
+3.如何进行源码混淆？混淆带来的好处：1.增加反编译泄密的难度 2.收缩代码 3.代码优化
+源码混淆的关键之处在于反射。因为反射代码混淆之后就不能够被虚拟机正确的映射。会出现错误。
+so,我们对反射代码做出保留：
+	1.注解。
+	2.序列化。容易忽略的就是bean
+	5.枚举
+	3.第三方jar or library (因为你不能确定是否使用了反射)如果是library方式就要写绝对路径。例如 -libraryjars F:\git\AndroidUtils\Utils\bin\utils.jar
+	4.其他用到反射的地方。
+    5.异常参考http://blog.csdn.net/janronehoo/article/details/15809423
+    
+4.ViewConfiguration.get(getContext()).getScaledTouchSlop();touch多长间距才会被认为是用户滑动
+
+http://developer.android.com/guide/topics/resources/runtime-changes.html
+5.In order for the Android system to restore the state of the views in your activity, each view must have a unique ID, supplied by the android:id attribute.
+To save additional data about the activity state, you must override the onSaveInstanceState() callback method。
+The system calls this method when the user is leaving your activity and passes it the Bundle object that will be saved in the event that your activity is destroyed unexpectedly. If the system must recreate the activity instance later, it passes the same Bundle object to both the onRestoreInstanceState() and onCreate() methods.
+
+6.Handling Runtime Changes。
+    a Allow your activity to restart when a configuration changes, but carry a stateful Object to the new instance of your activity.
+    b Handle the configuration change yourself,Prevent the system from restarting your activity during certain configuration changes, but receive a callback when the configurations do change, so that you can manually update your activity as necessary.
+
+7.Fragment 之间 通信：Fragment之间不直接进行通信，而是通过Activity来通信，按照常规一般使interface来实现。
+
+8.json ：先分析是object or array。
+
+9.String.format("name = %s,pass=%s",name,pass);
+	整数转换格式为：%[index$][标识][最小宽度]转换方式  ，可 百度参考
+
+10.使用 httpClient 同时提交文件和参数
+			MultipartEntity reqEntity = new MultipartEntity();
+			File file = new File(StringUtils.RECORD_PATH);
+			if(file.exists()){
+				FileBody bodyFile = new FileBody(file);
+				reqEntity.addPart("audioFile", bodyFile);
+				request.setEntity(reqEntity);
+			}
+			for (Map.Entry<String, String> entry : values.entrySet()) {
+				StringBody stringBody = new StringBody(entry.getValue()== null ?"-1":entry.getValue());
+				reqEntity.addPart(entry.getKey(), stringBody);
+			}
+			
+			request.setEntity(reqEntity);
+			
+11. ListView + radio实现单选。无需遍历，listview 设为单选模式，在 getView中得到前一次选中的item处理即可。	
+
+
+12.<item name="android:windowIsTranslucent">true</item> 样式中添加这个，当activity 启动销毁 左右动画时，可呈现特殊效果。即退出的activity无动画效果,而且如果下一个activity设为singleInstance，当前activity这个属性为透明即可防止启动时闪屏
+
+13.android 工程出现红叉号，无错误代码，无 jar丢失，重启Eclipse不能解决，则删除 problem 视图中 erros 项目即可。
+
+14.记住单选无需遍历，old and new 交换即可。
+
+15.View view = View.inflate(args...);公共资源抽取为style，尽量使用@android下的资源，速度快，体积小
+
+16.自定义权限
+
+17.如果给activity加权限（网络、文件、自定义等），启动该activity的 应用必须设置相应权限
+
+18.service 无任务栈，运行在主线程中，可以设置 process 另起进程。
+
+19.广播优先级：
+	清单注册同一优先级：谁先安装谁先拿到
+	代码注册与清单注册：代码
+	代码注册同一优先级：最早动态注册优先级别最高
+	
+	接收开机广播，最先动态注册，如果别的引用也这么干，我杀死他们，再动态注册。
+20.权限在安装时分配 (UID)，运行时检测。正常的uid 都是 app_num,系统的uid 为system，so 
+
+21.用户隐私：传统方法监听各种事件，例如来电等。现在 可通过读取logcat日志查看
+
+设计模式：
+工厂模式：pass
+单例模式：pass
+建造者模式(builder):
+原型模式(prototype):表现在java中就是对象clone
+享元模式：基本数据类型。当数据量很大时，重读的数据就可设计为享元模式节省资源。
+22.使用单例模式获取数据库连接。有时在某些情况下，小知识点：使用Singleton有事并不能达到Singleton的目的，如有多个Singleton同时被不同的类装入器装载。
+
+
+23.socket之udp：
+
+service：
+
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+
+public class MainClient {
+        public static void main(String[] args) throws IOException {
+
+                // 1.DatagramSocket表示接受或发送数据报的套接字，创建Socket
+                DatagramSocket server = new DatagramSocket(8002);
+                byte[] buffer = new byte[1024];
+                // 2.DatagramPacket表示存放数据的数据报
+                DatagramPacket data = new DatagramPacket(buffer, buffer.length);
+
+                // 3.将客户端信息存储在DatagramPacket中
+                server.receive(data);
+                // 4.向客户端发送DatagramPacket
+                DatagramPacket sendPacket = new DatagramPacket("I AM FOOL".getBytes(),
+                                "I AM FOOL".getBytes().length, data.getAddress(),
+                                data.getPort());
+                server.send(sendPacket);
+                server.close();
+
+        }
+}
+
+client：
+
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
+import android.util.Log;
+
+import junit.framework.Assert;
+import junit.framework.TestCase;
+
+public class MyTest extends TestCase {
+        public void testUdpSocket() throws UnknownHostException, IOException {
+
+                //1.创建Socket
+                DatagramSocket client = new DatagramSocket();
+                InetAddress addr = InetAddress.getByName("192.168.1.103");
+                //2.发送的报文
+                DatagramPacket sendPacket = new DatagramPacket("".getBytes(),"".getBytes().length,
+                                addr, 8002);
+                //3.发送数据
+                client.send(sendPacket);
+                byte[] recvBuf = new byte[1024];
+        		DatagramPacket recvPacket= new DatagramPacket(recvBuf , recvBuf.length);
+				//4.获取接收数据
+        		client.receive(recvPacket);
+        		String recvStr = new String(recvPacket.getData() , 0 ,recvPacket.getLength());
+                Log.i("assertEquals", recvStr);
+        		Assert.assertEquals(recvStr, "I AM FOOL");
+                
+        }
+}
+
+24.socket之tcp：
+
+server：
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.ServerSocket;
+import java.net.Socket;
+
+
+
+public class JsonMain {
+
+        /**
+         * @param args
+         * @throws IOException 
+         */
+        public static void main(String[] args) throws IOException {
+
+                ServerSocket serverSocket = new ServerSocket(8002);
+                
+                while(true){//接收远程连接
+                        Socket socket =  serverSocket.accept();
+                        OutputStream outputStream =  socket.getOutputStream();
+                        outputStream.write("You are fool".getBytes("UTF-8"));
+                        outputStream.close();
+                        socket.close();
+                }
+        }
+
+}
+
+client：
+
+import java.net.UnknownHostException;
+
+import junit.framework.Assert;
+
+import android.test.AndroidTestCase;
+
+public class MyTest extends AndroidTestCase{
+
+       public void testTcpSocket() throws UnknownHostException, IOException {
+
+        Socket socket = new Socket("192.168.1.103", 8002);
+        InputStream inputStream = socket.getInputStream();
+        byte[] buffer = new byte[1024];
+        int len = 0;
+        StringBuffer stringBuffer = new StringBuffer();
+        while ((len = inputStream.read(buffer)) != -1) {
+            stringBuffer.append(new String(buffer, 0,len));
+            
+        }
+        Assert.assertEquals(stringBuffer.toString(),"You are fool");
+        inputStream.close();
+        socket.close();
+    }
+}
+
+25.如何打印Log：
+	1.log必须打印数据：格式 activity - 用途 - 数据名称 - 数据
+	2.逻辑Log打印：比如：登陆-->进入首页-->获取数据-->
+	3.异常打印
+	4.封装一个Log工具类。设置为debug模式
+	
+26.条目点击出现详情页，详情页滑动关闭原来使用的是抽屉。
+
+
+27.android提供了几种在其他线程中访问UI线程的方法。 
+Activity.runOnUiThread( Runnable ) 
+View.post( Runnable ) 
+View.postDelayed( Runnable, long ) 
+Hanlder 
+
+28.FutureTask
+29.AsyncTask
+When first introduced, AsyncTasks were executed serially on a single background thread. Starting with DONUT, this was changed to a pool of threads allowing multiple tasks to operate in parallel. Starting with HONEYCOMB, tasks are executed on a single thread to avoid common application errors caused by parallel execution.
+If you truly want parallel execution, you can invoke executeOnExecutor(java.util.concurrent.Executor, Object[]) with THREAD_POOL_EXECUTOR.
+
+
+30.http://blog.csdn.net/luoshengyang/article/details/8852432
+   Dalvik虚拟机的内存大体上可以分为Java Object Heap、Bitmap Memory和Native Heap三种。
+   
+31.使用sparseArray 、sparseIntArray等替换map。
+
+32.parentActivityName
+
+33.ActivityOptions
+
+34.new EditText(this).setError(error)
+
+35.2.检查一个keystore: 
+keytool -list -v -keystore keystore 
+
+
+36.正则表达式：======================================
+\b :匹配单词的开始和结尾，它只匹配一个位置
+.是另一个元字符，匹配除了换行符以 外的任意字符
+\n 换行符ASCII编码为10(十六进制0x0A)，\r(十六进制0x0D),\r回车，\n换行符
+\n:  UNIX 系统行末结束符
+\n\r: window 系统行末结束符
+\r:  MAC OS 系统行末结束符
+
+
+
+表1.常用的元字符
+代码 	说明
+. 	匹配除换行符以外的任意字符
+\w 	匹配字母或数字或下划线或汉字
+\s 	匹配任意的空白符
+\d 	匹配数字
+\b 	匹配单词的开始或结束
+^ 	匹配字符串的开始
+$ 	匹配字符串的结束
+
+表2.常用的限定符
+代码/语法 	说明
+* 	重复零次或更多次
++ 	重复一次或更多次
+? 	重复零次或一次
+{n} 	重复n次
+{n,} 	重复n次或更多次
+{n,m} 	重复n到m次
+
+{}限定条件
+[]中的为列举出来的匹配项
+|分支条件
+()分组
+\反义
+
+表3.常用的反义代码
+代码/语法 	说明
+\W 	匹配任意不是字母，数字，下划线，汉字的字符
+\S 	匹配任意不是空白符的字符
+\D 	匹配任意非数字的字符
+\B 	匹配不是单词开头或结束的位置
+[^x] 	匹配除了x以外的任意字符
+[^aeiou] 	匹配除了aeiou这几个字母以外的任意字符
+
+后向引用：使用小括号指定一个子表达式后，匹配这个子表达式的文本
+
+使用小括号的时候，还有很多特定用途的语法。下面列出了最常用的一些：
+表4.常用分组语法 分类	代码/语法	说明
+捕获 		(exp) 			匹配exp,并捕获文本到自动命名的组里
+		(?<name>exp) 	匹配exp,并捕获文本到名称为name的组里，也可以写成(?'name'exp)
+		(?:exp) 		匹配exp,不捕获匹配的文本，也不给此分组分配组号
+零宽断言 	(?=exp) 		匹配exp前面的位置
+		(?<=exp) 		匹配exp后面的位置
+		(?!exp) 		匹配后面跟的不是exp的位置
+		(?<!exp) 		匹配前面不是exp的位置
+注释 		(?#comment) 	这种类型的分组不对正则表达式的处理产生任何影响，用于提供注释让人阅读
+
+
+贪婪与懒惰
+
+处理选项
+
+平衡组/递归匹配
+
+正则表达式：======================================

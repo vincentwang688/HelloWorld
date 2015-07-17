@@ -1,0 +1,1 @@
+1.AndroidTestCase:Extend this if you need to access Resources or other things that depend on Activity Context.
