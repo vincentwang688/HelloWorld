@@ -1,2 +1,2 @@
 # HelloWorld
-Learn to git command's demo.
+My first repository on GitHub.
